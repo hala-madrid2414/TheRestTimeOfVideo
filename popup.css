@@ -1,0 +1,98 @@
+body {
+  font-family: 'Microsoft YaHei', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+.container {
+  width: 320px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 18px;
+  color: #fb7299;
+  margin: 0 0 15px 0;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.result-container {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+  min-height: 150px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.label {
+  color: #666;
+  font-weight: 500;
+}
+
+.value {
+  font-weight: bold;
+  color: #333;
+}
+
+.highlight {
+  color: #fb7299;
+  font-size: 16px;
+}
+
+#loading {
+  text-align: center;
+  padding: 30px 0;
+  color: #999;
+}
+
+.hidden {
+  display: none;
+}
+
+#error-message {
+  text-align: center;
+  color: #e74c3c;
+  padding: 20px 0;
+}
+
+.error-details {
+  font-size: 12px;
+  color: #999;
+  margin-top: 5px;
+}
+
+.footer {
+  text-align: center;
+}
+
+button {
+  background-color: #fb7299;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #fc8bab;
+}
+
+button:active {
+  background-color: #e45c84;
+}

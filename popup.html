@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>B站视频剩余时长计算器</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>B站视频剩余时长</h1>
+    <div class="result-container">
+      <div id="loading">计算中...</div>
+      <div id="result" class="hidden">
+        <div class="info-row">
+          <span class="label">当前视频:</span>
+          <span id="current-video-title" class="value">--</span>
+        </div>
+        <div class="info-row">
+          <span class="label">当前进度:</span>
+          <span id="current-progress" class="value">--</span>
+        </div>
+        <div class="info-row">
+          <span class="label">剩余视频数:</span>
+          <span id="remaining-videos" class="value">--</span>
+        </div>
+        <div class="info-row">
+          <span class="label">剩余总时长:</span>
+          <span id="remaining-time" class="value highlight">--</span>
+        </div>
+        <div class="info-row">
+          <span class="label">预计完成时间:</span>
+          <span id="estimated-finish-time" class="value">--</span>
+        </div>
+      </div>
+      <div id="error-message" class="hidden">
+        <p>无法计算剩余时长</p>
+        <p class="error-details">请确保您正在浏览B站合集视频页面</p>
+      </div>
+    </div>
+    <div class="footer">
+      <button id="refresh-btn">刷新数据</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
