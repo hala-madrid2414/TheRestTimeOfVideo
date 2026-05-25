@@ -6,6 +6,7 @@ type VideoTimeInfo = {
   currentVideoTitle: string;
   currentProgress: string;
   remainingVideos: number;
+  totalVideos?: number;
   remainingTime: string;
   estimatedFinishTime: string;
 };
@@ -17,10 +18,24 @@ function parseProgressToPercentage(progressStr: string | undefined): number {
   if (parts.length !== 2) return 0;
 
   const parseTime = (timeStr: string) => {
+    const cleanStr = timeStr.trim();
+    
+    // 兼容 HH:MM:SS 或 MM:SS 格式
+    if (cleanStr.includes(':')) {
+      const timeParts = cleanStr.split(':').map(Number);
+      if (timeParts.length === 3) {
+        return (timeParts[0] || 0) * 3600 + (timeParts[1] || 0) * 60 + (timeParts[2] || 0);
+      } else if (timeParts.length === 2) {
+        return (timeParts[0] || 0) * 60 + (timeParts[1] || 0);
+      }
+      return 0;
+    }
+
+    // 兼容旧版的 XX时XX分XX秒 格式
     let hours = 0, minutes = 0, seconds = 0;
-    const hMatch = timeStr.match(/(\d+)时/);
-    const mMatch = timeStr.match(/(\d+)分/);
-    const sMatch = timeStr.match(/(\d+)秒/);
+    const hMatch = cleanStr.match(/(\d+)时/);
+    const mMatch = cleanStr.match(/(\d+)分/);
+    const sMatch = cleanStr.match(/(\d+)秒/);
     
     if (hMatch) hours = parseInt(hMatch[1], 10);
     if (mMatch) minutes = parseInt(mMatch[1], 10);
@@ -46,6 +61,16 @@ export default function Popup() {
     () => typeof globalThis !== 'undefined' && typeof globalThis.chrome !== 'undefined',
     []
   );
+
+  const totalProgressPercentage = useMemo(() => {
+    if (!data || !data.totalVideos || data.totalVideos <= 0) return 0;
+    
+    const completedVideos = Math.max(0, data.totalVideos - data.remainingVideos);
+    const currentVideoProgressFraction = parseProgressToPercentage(data.currentProgress) / 100;
+    
+    const totalPercentage = ((completedVideos + currentVideoProgressFraction) / data.totalVideos) * 100;
+    return Math.min(Math.max(totalPercentage, 0), 100);
+  }, [data]);
 
   const showLoading = useCallback(() => {
     setStatus('loading');
@@ -142,9 +167,26 @@ export default function Popup() {
           
           <div className="divider"></div>
 
+          {data?.totalVideos && data.totalVideos > 0 && (
+            <div className="info-block">
+              <span className="label">总进度</span>
+              <div className="progress-wrapper">
+                <div className="progress-bar-container">
+                  <div 
+                    className="progress-bar-fill total-progress-fill" 
+                    style={{ width: `${totalProgressPercentage}%` }}
+                  ></div>
+                </div>
+                <span className="progress-text">
+                  {Math.round(totalProgressPercentage)}%
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="info-row">
             <span className="label">剩余视频数</span>
-            <span className="value">{data ? `${data.remainingVideos} 个` : '--'}</span>
+            <span className="value">{data ? `${data.remainingVideos} 个 (共 ${data.totalVideos || '--'} 个)` : '--'}</span>
           </div>
           <div className="info-row">
             <span className="label">剩余总时长</span>
@@ -164,7 +206,25 @@ export default function Popup() {
 
       <div className="footer">
         <button type="button" onClick={fetchVideoTimeInfo} disabled={status === 'loading'}>
-          {status === 'loading' ? '刷新中...' : '刷新数据'}
+          <span className="button-content">
+            <svg 
+              className={`refresh-icon ${status === 'loading' ? 'spinning' : ''}`}
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            {status === 'loading' ? '刷新中...' : '刷新数据'}
+          </span>
         </button>
       </div>
     </div>

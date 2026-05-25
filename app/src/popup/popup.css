@@ -88,6 +88,31 @@ h1 {
   transition: width 0.3s ease;
 }
 
+.total-progress-fill {
+  background-color: #00a1d6;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 16px 16px;
+  animation: progress-stripes 1s linear infinite;
+}
+
+@keyframes progress-stripes {
+  from {
+    background-position: 16px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
 .progress-text {
   font-size: 12px;
   color: #9499a0;
@@ -209,4 +234,19 @@ button:active:not(:disabled) {
 button:disabled {
   background-color: #fcb6ca;
   cursor: not-allowed;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.refresh-icon {
+  display: inline-block;
+}
+
+.refresh-icon.spinning {
+  animation: spin 1s linear infinite;
 }

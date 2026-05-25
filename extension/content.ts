@@ -2,6 +2,7 @@ type VideoTimeInfo = {
   currentVideoTitle: string;
   currentProgress: string;
   remainingVideos: number;
+  totalVideos: number;
   remainingTime: string;
   estimatedFinishTime: string;
   note?: string;
@@ -66,6 +67,7 @@ function calculateRemainingTime(): VideoTimeInfo | Promise<VideoTimeInfo> {
   const remainingVideos = videoList.length - currentIndex;
 
   let displayRemainingVideos = remainingVideos;
+  let totalVideosCount = videoList.length;
 
   const pageIndexInfo = document.querySelector(
     '.cur-page, .video-data, .player-auxiliary-playlist-top .last-line'
@@ -78,6 +80,7 @@ function calculateRemainingTime(): VideoTimeInfo | Promise<VideoTimeInfo> {
       const totalVideos = parseInt(match[2]);
       if (!isNaN(currentPageIndex) && !isNaN(totalVideos) && totalVideos > 0) {
         displayRemainingVideos = totalVideos - currentPageIndex + 1;
+        totalVideosCount = totalVideos;
         console.log(
           '从页面信息计算剩余视频数：当前索引',
           currentPageIndex,
@@ -116,6 +119,7 @@ function calculateRemainingTime(): VideoTimeInfo | Promise<VideoTimeInfo> {
     currentProgress:
       formatTime(currentProgress.currentTime) + ' / ' + formatTime(currentProgress.duration),
     remainingVideos: displayRemainingVideos || remainingVideos,
+    totalVideos: totalVideosCount,
     remainingTime: formattedRemainingTime,
     estimatedFinishTime: estimatedFinishTime
   };
@@ -375,6 +379,7 @@ function extractTimeInfoFromPage(): VideoTimeInfo | null {
       });
 
       const estimatedRemainingVideos = Math.max(1, count - 1);
+      const totalVideosCount = count;
       const remainingTimeInSeconds = Math.max(0, totalSeconds - currentProgress.currentTime);
       const formattedRemainingTime = formatTime(remainingTimeInSeconds);
       const estimatedFinishTime = calculateEstimatedFinishTime(remainingTimeInSeconds);
@@ -384,6 +389,7 @@ function extractTimeInfoFromPage(): VideoTimeInfo | null {
         currentProgress:
           formatTime(currentProgress.currentTime) + ' / ' + formatTime(currentProgress.duration),
         remainingVideos: estimatedRemainingVideos,
+        totalVideos: totalVideosCount,
         remainingTime: formattedRemainingTime,
         estimatedFinishTime: estimatedFinishTime,
         note: '注意：由于无法精确识别视频列表，这是基于页面内容的估计值'
@@ -615,7 +621,7 @@ function parseTimeToSeconds(timeStr: string): number {
 
 function formatTime(seconds: number): string {
   if (isNaN(seconds) || seconds < 0) {
-    return '00时00分00秒';
+    return '00:00:00';
   }
 
   const totalSeconds = Math.floor(seconds);
@@ -623,25 +629,19 @@ function formatTime(seconds: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const secs = totalSeconds % 60;
 
-  return `${hours.toString().padStart(2, '0')}时${minutes
+  return `${hours.toString().padStart(2, '0')}:${minutes
     .toString()
-    .padStart(2, '0')}分${secs.toString().padStart(2, '0')}秒`;
+    .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
 function calculateEstimatedFinishTime(remainingSeconds: number): string {
-  if (remainingSeconds > 12 * 3600) {
-    return '预计需要多天完成';
-  }
-
   const now = new Date();
   const finishTime = new Date(now.getTime() + remainingSeconds * 1000);
 
-  const hours = finishTime.getHours();
-  const minutes = finishTime.getMinutes();
+  const month = finishTime.getMonth() + 1;
+  const date = finishTime.getDate();
+  const hours = finishTime.getHours().toString().padStart(2, '0');
+  const minutes = finishTime.getMinutes().toString().padStart(2, '0');
 
-  if (finishTime.getDate() !== now.getDate()) {
-    return `明天 ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
-  return `今天 ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  return `${month}月${date}日 ${hours}:${minutes}`;
 }
