@@ -10,11 +10,6 @@ type VideoTimeInfo = {
   estimatedFinishTime: string;
 };
 
-function truncateText(text: string, maxLength: number) {
-  if (text.length <= maxLength) return text;
-  return `${text.substring(0, maxLength - 3)}...`;
-}
-
 export default function Popup() {
   const [status, setStatus] = useState<Status>('loading');
   const [data, setData] = useState<VideoTimeInfo | null>(null);
@@ -38,7 +33,7 @@ export default function Popup() {
   const fetchVideoTimeInfo = useCallback(() => {
     showLoading();
 
-    if (!canUseChrome) {
+    if (!canUseChrome || !chrome?.tabs) {
       showError('无法连接到页面: chrome API 不可用');
       return;
     }
@@ -87,41 +82,49 @@ export default function Popup() {
 
       <div className="result-container">
         <div id="loading" className={status === 'loading' ? '' : 'hidden'}>
+          <div className="spinner"></div>
           计算中...
         </div>
 
         <div id="result" className={status === 'success' ? '' : 'hidden'}>
-          <div className="info-row">
-            <span className="label">当前视频:</span>
-            <span className="value">{truncateText(data?.currentVideoTitle ?? '--', 20)}</span>
+          <div className="info-block">
+            <span className="label">当前视频</span>
+            <span className="value title-value" title={data?.currentVideoTitle}>
+              {data?.currentVideoTitle ?? '--'}
+            </span>
           </div>
-          <div className="info-row">
-            <span className="label">当前进度:</span>
-            <span className="value">{data?.currentProgress ?? '--'}</span>
+          <div className="info-block">
+            <span className="label">当前进度</span>
+            <span className="value progress-value" title={data?.currentProgress}>
+              {data?.currentProgress ?? '--'}
+            </span>
           </div>
+          
+          <div className="divider"></div>
+
           <div className="info-row">
-            <span className="label">剩余视频数:</span>
+            <span className="label">剩余视频数</span>
             <span className="value">{data ? `${data.remainingVideos} 个` : '--'}</span>
           </div>
           <div className="info-row">
-            <span className="label">剩余总时长:</span>
+            <span className="label">剩余总时长</span>
             <span className="value highlight">{data?.remainingTime ?? '--'}</span>
           </div>
           <div className="info-row">
-            <span className="label">预计完成时间:</span>
+            <span className="label">预计完成时间</span>
             <span className="value">{data?.estimatedFinishTime ?? '--'}</span>
           </div>
         </div>
 
         <div id="error-message" className={status === 'error' ? '' : 'hidden'}>
-          <p>无法计算剩余时长</p>
+          <p className="error-title">无法计算剩余时长</p>
           <p className="error-details">{errorMessage || '请确保您正在浏览B站合集视频页面'}</p>
         </div>
       </div>
 
       <div className="footer">
-        <button type="button" onClick={fetchVideoTimeInfo}>
-          刷新数据
+        <button type="button" onClick={fetchVideoTimeInfo} disabled={status === 'loading'}>
+          {status === 'loading' ? '刷新中...' : '刷新数据'}
         </button>
       </div>
     </div>
