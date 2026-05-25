@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "B站视频剩余时长",
+  "version": "1.0.0",
+  "description": "计算B站合集视频剩余播放时长",
+  "permissions": ["activeTab"],
+  "host_permissions": ["*://*.bilibili.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.svg",
+      "48": "images/icon48.svg",
+      "128": "images/icon128.svg"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.bilibili.com/video/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "images/icon16.svg",
+    "48": "images/icon48.svg",
+    "128": "images/icon128.svg"
+  }
+}
