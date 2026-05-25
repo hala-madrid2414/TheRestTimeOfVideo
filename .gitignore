@@ -1,0 +1,4 @@
+.trae/specs
+node_modules
+dist
+.worktrees
