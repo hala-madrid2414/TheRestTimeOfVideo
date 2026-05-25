@@ -10,6 +10,33 @@ type VideoTimeInfo = {
   estimatedFinishTime: string;
 };
 
+function parseProgressToPercentage(progressStr: string | undefined): number {
+  if (!progressStr || progressStr === '--') return 0;
+  
+  const parts = progressStr.split('/');
+  if (parts.length !== 2) return 0;
+
+  const parseTime = (timeStr: string) => {
+    let hours = 0, minutes = 0, seconds = 0;
+    const hMatch = timeStr.match(/(\d+)时/);
+    const mMatch = timeStr.match(/(\d+)分/);
+    const sMatch = timeStr.match(/(\d+)秒/);
+    
+    if (hMatch) hours = parseInt(hMatch[1], 10);
+    if (mMatch) minutes = parseInt(mMatch[1], 10);
+    if (sMatch) seconds = parseInt(sMatch[1], 10);
+    
+    return hours * 3600 + minutes * 60 + seconds;
+  };
+
+  const currentSeconds = parseTime(parts[0]);
+  const totalSeconds = parseTime(parts[1]);
+
+  if (totalSeconds === 0) return 0;
+  const percentage = (currentSeconds / totalSeconds) * 100;
+  return Math.min(Math.max(percentage, 0), 100);
+}
+
 export default function Popup() {
   const [status, setStatus] = useState<Status>('loading');
   const [data, setData] = useState<VideoTimeInfo | null>(null);
@@ -98,6 +125,19 @@ export default function Popup() {
             <span className="value progress-value" title={data?.currentProgress}>
               {data?.currentProgress ?? '--'}
             </span>
+            {data?.currentProgress && data.currentProgress !== '--' && (
+              <div className="progress-wrapper">
+                <div className="progress-bar-container">
+                  <div 
+                    className="progress-bar-fill" 
+                    style={{ width: `${parseProgressToPercentage(data.currentProgress)}%` }}
+                  ></div>
+                </div>
+                <span className="progress-text">
+                  {Math.round(parseProgressToPercentage(data.currentProgress))}%
+                </span>
+              </div>
+            )}
           </div>
           
           <div className="divider"></div>
