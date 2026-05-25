@@ -1,76 +1,147 @@
 # B站视频剩余时长计算器
 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg)](https://vitejs.dev/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome_Extension-MV3-4285F4.svg)](https://developer.chrome.com/docs/extensions/mv3/)
+
 Chrome/Edge 扩展：在 B 站合集/多集视频页面计算“从当前集开始到看完”的剩余总时长，并在弹窗中展示标题、进度、剩余集数、剩余总时长与预计完成时间。
 
-## 使用者
+![扩展截图](assets/example.png)
 
-### 加载 dist（推荐）
+---
+
+## 使用者指南
+
+### 安装（推荐方式）
 
 浏览器只需要加载构建产物 `dist/` 目录（而不是仓库根目录）。
 
-1. 确保你拿到的是 `dist/` 目录（其中包含 `manifest.json`）
+1. 确保你拿到的是构建好的 `dist/` 目录（其中包含 `manifest.json`）
 2. 打开扩展管理页：
    - Chrome：`chrome://extensions/`
    - Edge：`edge://extensions/`
-3. 打开右上角“开发者模式”
-4. 点击“加载已解压的扩展程序”，选择 `dist/` 目录
-5. 安装完成后，工具栏会出现扩展图标
+3. 开启右上角**“开发者模式”**
+4. 点击**“加载已解压的扩展程序”**，选择 `dist/` 目录
+5. 安装完成后，工具栏会出现本扩展的图标
 
-### 使用方法
+### 功能特性
 
-1. 打开任意 B 站视频页（`bilibili.com/video/*`），并开始播放
-2. 点击扩展图标打开弹窗
-3. 弹窗会展示：
-   - 当前视频标题
-   - 当前播放进度
-   - 剩余视频数
-   - 剩余总时长
-   - 预计完成时间
-4. 点击“刷新数据”重新计算
+- **剩余总时长计算** — 自动解析合集/多集视频列表，计算从当前集起看完所需的总时长
+- **实时进度展示** — 显示当前视频标题、当前播放进度、剩余未看集数
+- **预计完成时间** — 基于当前时间 + 剩余时长，推算出看完所有剩余视频的预计时刻
+- **一键刷新** — 切换视频集数或进度发生较大变化后，点击即可重新获取最新数据
 
-### 注意事项
+### 已知限制
 
-- 仅在 `bilibili.com/video/*` 页面生效；非视频页会提示“请在B站视频页面使用此扩展”
-- 计算基于页面可解析到的视频列表与时长信息；如结果异常可尝试刷新页面后重试
+- **支持范围**：目前主要支持 B 站标准合集/多集视频（URL 匹配 `bilibili.com/video/*`）。番剧（`bangumi`）、课程、稍后再看及部分特殊播放页可能无法准确解析。
+- **运行条件**：仅在 B 站视频页生效；在非视频页点击会提示“请在B站视频页面使用此扩展”。
+- **数据来源**：计算基于当前页面 DOM 元素解析出的视频列表与时长信息，非 B 站内部 API。
+- **网络与状态异常**：如果遇到页面未完全加载、网络异常或 B 站页面结构发生变更，可能导致时长计算不准或显示为空白，请尝试**刷新页面**后重试。
 
-## 开发者
+### 常见问题 (FAQ)
 
-### 安装
+**Q：为什么弹窗显示空白或“未获取到数据”？**
+A：请确保当前处于 B 站视频播放页且页面已加载完毕。如果页面刚刷新，请等待几秒钟再点击扩展图标。
+
+**Q：计算的时间不准怎么办？**
+A：计算基于页面加载时的时长信息。如果你已经播放了一部分，可以点击弹窗中的“刷新数据”按钮来更新计算结果。
+
+**Q：有更新日志吗？**
+A：详见 CHANGELOG.md（占位，待补充）。
+
+---
+
+## 开发者指南
+
+### 技术栈
+
+- **构建工具**：Vite
+- **语言**：TypeScript, React
+- **扩展规范**：Chrome Extension Manifest V3
+
+### 项目结构
+
+```text
+├── app/                  # React 弹窗 UI 应用
+│   ├── src/popup/        # Popup 页面源码
+│   └── index.html        # Popup 入口 HTML
+├── extension/            # 浏览器扩展核心逻辑
+│   ├── background.ts     # Service Worker (后台脚本)
+│   └── content.ts        # Content Script (内容脚本，注入页面)
+├── scripts/              # 构建与校验脚本
+├── images/               # 扩展图标资源
+├── docs/                 # 开发文档 (包含迁移报告等)
+├── manifest.json         # 扩展配置文件 (MV3)
+└── vite.config.ts        # Vite 构建配置
+```
+
+### 架构简述
+
+- **Content Script (`content.ts`)**：被注入到 `bilibili.com/video/*` 页面，负责解析 DOM 获取视频列表、当前集数及各集时长。
+- **Popup (`app/src/popup/`)**：用户点击扩展图标时弹出的 React UI。
+- **Background (`background.ts`)**：Service Worker，负责协调各部分并在后台维持扩展生命周期。
+- **通信机制**：Popup 通过 Chrome Message API 与 Content Script 通信，请求最新的时长计算数据。
+
+### 开发调试流程
+
+#### 1. 安装依赖
 
 ```bash
 npm install
 ```
 
-### 开发（调试弹窗 UI）
+#### 2. 开发（调试弹窗 UI）
 
 ```bash
 npm run dev
 ```
+启动后在浏览器打开 Vite 提供的本地服务器地址，并访问 `popup.html`（例如 `http://localhost:5173/popup.html`），即可在浏览器外独立调试 React UI 组件与样式。
 
-启动后在浏览器打开 Vite 提供的地址，并访问 `popup.html`（例如 `http://localhost:5173/popup.html`）进行弹窗 UI 开发调试。
+#### 3. 调试 Content Script / Background
 
-### 构建（生成可加载的 dist）
+若需要调试页面注入逻辑：
+1. 先执行 `npm run build`
+2. 在浏览器中加载 `dist/` 目录
+3. 打开 B 站视频页，打开网页的开发者工具 (DevTools) 即可调试 Content Script；
+4. 在扩展管理页点击“Service Worker”即可调试 Background 脚本。
+*(注：扩展内容脚本暂不支持 Vite HMR 热更新，修改代码后需重新 build 并刷新扩展与页面)*
+
+### 构建说明
 
 ```bash
 npm run build
 ```
+构建产物将输出至 `dist/` 目录。
+- `dist/` 目录是一个完整的 Chrome 扩展包，可直接以“加载已解压的扩展程序”方式加载。
+- 构建流程会编译 React UI 并将 `extension/` 中的 TS 脚本一起打包。
 
-构建完成后：
-- `dist/` 可直接在 Chrome/Edge 以“加载已解压的扩展程序”方式加载
-- `dist/manifest.json` 引用稳定文件名（不依赖 hash 文件名）
-
-### 校验（可选但推荐）
-
+**校验构建产物（推荐）**
 ```bash
 npm run verify
 ```
+该命令会依次执行：TypeScript 类型检查 -> Vite 构建 -> `dist/` 结构与文件完整性校验。当你准备提交代码前，建议运行此命令以确保产物无误。
 
-该命令会依次执行类型检查、构建与 `dist/` 结构校验。
+### 贡献指南
 
-## 迁移报告
+1. Fork 本仓库并基于 `main` 分支拉取新分支
+2. 遵循现有的代码规范（TypeScript + React）
+3. 提交前确保运行 `npm run verify` 无报错
+4. 提交 Pull Request，并在描述中说明改动点
+5. 迁移报告详见 [docs/migration-report.md](docs/migration-report.md)
 
-- [docs/migration-report.md](docs/migration-report.md)
+---
 
 ## 隐私说明
 
-本扩展不会收集任何个人数据，所有计算均在本地完成。扩展仅在 B 站视频页面上运行，且只读取与时长计算相关的信息。
+本扩展注重用户隐私与数据安全：
+- **不请求任何额外网络权限**，也不收集、上传或与第三方共享任何个人数据。
+- **不访问非 B站页面**，所有功能仅在匹配 `*://*.bilibili.com/video/*` 时生效。
+- **申请的权限解释**：
+  - `activeTab`：仅在用户主动点击扩展图标时，获取当前标签页权限以执行脚本。
+  - `*://*.bilibili.com/*`：用于在 B 站域名下注入脚本以读取视频时长。
+
+---
+
+## 开源协议
+
+[MIT License](./LICENSE)
