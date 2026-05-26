@@ -132,6 +132,15 @@ async function main() {
   await assertHtmlReferences();
   await assertNoHashedFilenames();
   console.log('dist check passed');
+  console.log('\n===================================================');
+  console.log('✅ 构建成功！产物已生成至: dist/ 目录');
+  console.log('');
+  console.log('🚀 如何在浏览器中安装此扩展：');
+  console.log('1. 打开 Chrome/Edge，在地址栏输入 chrome://extensions/ (或 edge://extensions/)');
+  console.log('2. 开启右上角的【开发者模式】');
+  console.log('3. 点击左上角【加载已解压的扩展程序】');
+  console.log('4. 选择本项目下的 dist/ 目录即可完成安装！');
+  console.log('===================================================\n');
 }
 
 try {
